@@ -178,7 +178,7 @@ class DashboardController extends Controller
         // ==== CHART DATA ====
         $visitTrends = $this->getVisitTrends($visitsQuery);
         $qscScoreTrend = $this->getQscScoreTrend($visitsQuery);
-        $visitsByArea = $this->getVisitsByArea($visitsQuery);
+        $visitsByAreaManager = $this->getVisitsByAreaManager($visitsQuery);
         $actionPlanStatus = $this->getActionPlanStatus($actionPlansQuery);
         $performanceData = $this->getPerformanceData($visitsQuery);
         
@@ -285,7 +285,7 @@ class DashboardController extends Controller
             'charts' => [
                 'visitTrends' => $visitTrends,
                 'qscScoreTrend' => $qscScoreTrend,
-                'visitsByArea' => $visitsByArea,
+                'visitsByAreaManager' => $visitsByAreaManager,
                 'actionPlanStatus' => $actionPlanStatus,
                 'issueCategories' => $issueCategories,
                 'performance' => $performanceData,
@@ -458,12 +458,45 @@ class DashboardController extends Controller
         ];
     }
     
-    private function getVisitsByArea($visitsQuery)
+    private function getVisitsByAreaManager($visitsQuery)
     {
-        // Placeholder - would need area field
+        // Get visits grouped by area manager
+        $visitsByAreaManager = (clone $visitsQuery)
+            ->join('restaurants', 'store_visits.restaurant_name', '=', 'restaurants.name')
+            ->join('user_restaurant', 'restaurants.id', '=', 'user_restaurant.restaurant_id')
+            ->join('users', 'user_restaurant.user_id', '=', 'users.id')
+            ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where('roles.name', 'Area Manager')
+            ->where('model_has_roles.model_type', 'App\\Models\\User')
+            ->select('users.name as area_manager_name', DB::raw('COUNT(*) as visit_count'))
+            ->groupBy('users.id', 'users.name')
+            ->orderBy('visit_count', 'desc')
+            ->get();
+
+        $labels = $visitsByAreaManager->pluck('area_manager_name')->take(10)->toArray();
+        $data = $visitsByAreaManager->pluck('visit_count')->take(10)->toArray();
+        
+        // If no data, show placeholder
+        if (empty($labels)) {
+            return [
+                'labels' => ['No area managers found'],
+                'data' => [0],
+                'colors' => ['#e5e7eb'],
+            ];
+        }
+
+        // Generate colors for each area manager
+        $colors = [];
+        $baseColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6b7280'];
+        for ($i = 0; $i < count($labels); $i++) {
+            $colors[] = $baseColors[$i % count($baseColors)];
+        }
+
         return [
-            'labels' => ['North', 'Central', 'South', 'East', 'West'],
-            'data' => [45, 52, 28, 38, 25],
+            'labels' => $labels,
+            'data' => $data,
+            'colors' => $colors,
         ];
     }
     

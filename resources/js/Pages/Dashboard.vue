@@ -106,6 +106,41 @@ const chartOptions = {
     }
 };
 
+// Area Manager Bar Chart Options (specific for better label handling)
+const areaManagerChartOptions = {
+    ...chartOptions,
+    scales: {
+        y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(148, 163, 184, 0.1)' },
+            ticks: { color: '#94a3b8', font: { size: 11 } }
+        },
+        x: {
+            grid: { color: 'rgba(148, 163, 184, 0.1)' },
+            ticks: { 
+                color: '#94a3b8', 
+                font: { size: 10 },
+                maxRotation: 45,
+                minRotation: 0
+            }
+        }
+    },
+    plugins: {
+        ...chartOptions.plugins,
+        tooltip: {
+            ...chartOptions.plugins.tooltip,
+            callbacks: {
+                title: (context) => {
+                    return `Area Manager: ${context[0].label}`;
+                },
+                label: (context) => {
+                    return `Store Visits: ${context.parsed.y}`;
+                }
+            }
+        }
+    }
+};
+
 // QSC Score Trend Chart
 const qscScoreTrendData = computed(() => ({
     labels: props.charts?.qscScoreTrend?.labels || [],
@@ -140,13 +175,19 @@ const visitsTrendData = computed(() => ({
     }]
 }));
 
-// Visits by Area Chart
-const visitsByAreaData = computed(() => ({
-    labels: props.charts?.visitsByArea?.labels || [],
+// Visits by Area Manager Chart
+const visitsByAreaManagerData = computed(() => ({
+    labels: props.charts?.visitsByAreaManager?.labels || [],
     datasets: [{
-        label: 'Visits',
-        data: props.charts?.visitsByArea?.data || [],
-        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+        label: 'Store Visits',
+        data: props.charts?.visitsByAreaManager?.data || [],
+        backgroundColor: props.charts?.visitsByAreaManager?.colors || [
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', 
+            '#06b6d4', '#84cc16', '#f97316', '#ec4899', '#6b7280'
+        ],
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 1,
+        borderRadius: 8,
     }]
 }));
 
@@ -458,16 +499,16 @@ const doughnutOptions = {
 
                 <!-- 📊 Secondary Charts Row -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                    <!-- Store Visits by Area -->
+                    <!-- Store Visits by Area Manager -->
                     <div class="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition-shadow duration-300 border border-gray-100">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
-                                <span>🗺️</span> Visits by Area
+                                <span>�</span> Visits by Area Manager
                             </h3>
-                            <span class="text-xs text-gray-500">Regional breakdown</span>
+                            <span class="text-xs text-gray-500">Manager performance</span>
                         </div>
                         <div class="h-64">
-                            <Bar :data="visitsByAreaData" :options="chartOptions" />
+                            <Bar :data="visitsByAreaManagerData" :options="areaManagerChartOptions" />
                         </div>
                     </div>
 
