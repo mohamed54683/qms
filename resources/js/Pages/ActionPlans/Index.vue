@@ -744,7 +744,9 @@
                                                         <div class="aspect-square rounded overflow-hidden border-2 border-red-200 hover:border-red-400 transition">
                                                             <img :src="`/storage/${imageObj.image_path}`" 
                                                                  :alt="`Evidence ${index + 1}`"
-                                                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                                                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-300"
+                                                                 @error="handleImageError($event, imageObj)"
+                                                                 loading="lazy">
                                                         </div>
                                                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition flex items-center justify-center rounded">
                                                             <svg class="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1114,6 +1116,31 @@ const openImageModal = (image) => {
 
 const closeImageModal = () => {
     selectedImage.value = null
+}
+
+// Handle image loading errors
+const handleImageError = (event, imageObj) => {
+    console.warn('Failed to load image:', imageObj.image_path)
+    
+    // Try alternative path or show placeholder
+    const img = event.target
+    if (!img.src.includes('?retry=1')) {
+        // First try: add retry parameter to bust cache
+        img.src = `/storage/${imageObj.image_path}?retry=1`
+    } else {
+        // Second try failed: show placeholder or hide
+        img.style.display = 'none'
+        const container = img.closest('.aspect-square')
+        if (container) {
+            container.innerHTML = `
+                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            `
+        }
+    }
 }
 
 // Filter form

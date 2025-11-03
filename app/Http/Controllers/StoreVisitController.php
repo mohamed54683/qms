@@ -304,6 +304,9 @@ class StoreVisitController extends Controller
                     // Store in storage/app/public/action-plans
                     $path = $image->storeAs('action-plans', $filename, 'public');
                     
+                    // Ensure file is accessible via public storage link
+                    $this->ensureImageAccessible($path);
+                    
                     if (!isset($uploadedImages[$fieldName])) {
                         $uploadedImages[$fieldName] = [];
                     }
@@ -854,6 +857,32 @@ class StoreVisitController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return redirect()->back()->with('error', 'Failed to create action plans: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Ensure uploaded image is accessible via public storage link
+     * This fixes the issue where images are stored in storage/app/public but not accessible via /storage/
+     */
+    private function ensureImageAccessible($path)
+    {
+        // Path is like 'action-plans/filename.jpg'
+        $storagePath = storage_path('app/public/' . $path);
+        $publicPath = public_path('storage/' . $path);
+        
+        // Ensure public storage directory exists
+        $publicDir = dirname($publicPath);
+        if (!is_dir($publicDir)) {
+            mkdir($publicDir, 0755, true);
+        }
+        
+        // Copy file to public storage if it doesn't exist or is different
+        if (file_exists($storagePath) && (!file_exists($publicPath) || filemtime($storagePath) > filemtime($publicPath))) {
+            copy($storagePath, $publicPath);
+            \Log::info('Image copied to public storage', [
+                'from' => $storagePath,
+                'to' => $publicPath
+            ]);
         }
     }
 }
