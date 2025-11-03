@@ -283,12 +283,12 @@
                                 </div>
 
                                 <!-- Area Manager Filter -->
-                                <div v-if="props.canViewAreaManagerFilter" class="space-y-2">
+                                <div v-if="props.canViewAreaManagerFilter || props.isAdmin" class="space-y-2">
                                     <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
                                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
-                                        Area Manager
+                                        👤 Area Manager
                                     </label>
                                     <select v-model="filters.area_manager" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
                                         <option value="">👤 All Area Managers</option>

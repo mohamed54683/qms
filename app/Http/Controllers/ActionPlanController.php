@@ -128,7 +128,7 @@ class ActionPlanController extends Controller
         
         // Get area managers (based on permission and assigned area managers)
         $areaManagers = [];
-        $canViewAreaManagerFilter = $user->can('view_area_manager_filter');
+        $canViewAreaManagerFilter = $isAdmin || $user->can('view_area_manager_filter');
         
         if ($canViewAreaManagerFilter) {
             if ($isAdmin) {
