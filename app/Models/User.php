@@ -52,7 +52,7 @@ class User extends Authenticatable
      */
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'model_has_roles', 'model_id', 'role_id')
+        return $this->belongsToMany(\Spatie\Permission\Models\Role::class, 'model_has_roles', 'model_id', 'role_id')
                     ->where('model_type', self::class);
     }
 
@@ -69,7 +69,7 @@ class User extends Authenticatable
      */
     public function assignRole($roleName)
     {
-        $role = Role::where('name', $roleName)->first();
+        $role = \Spatie\Permission\Models\Role::where('name', $roleName)->first();
         if ($role && !$this->hasRole($roleName)) {
             $this->roles()->attach($role->id, ['model_type' => self::class]);
         }
@@ -81,7 +81,7 @@ class User extends Authenticatable
      */
     public function removeRole($roleName)
     {
-        $role = Role::where('name', $roleName)->first();
+        $role = \Spatie\Permission\Models\Role::where('name', $roleName)->first();
         if ($role) {
             $this->roles()->detach($role->id);
         }

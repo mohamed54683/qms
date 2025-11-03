@@ -231,14 +231,14 @@ class DashboardController extends Controller
             if ($isAdmin) {
                 // Admin can see all area managers
                 $areaManagers = User::role('Area Manager')
-                    ->select('id', 'name')
-                    ->orderBy('name')
+                    ->select('users.id', 'users.name')
+                    ->orderBy('users.name')
                     ->get();
             } else {
                 // Non-admin users can only see their assigned area managers
                 $areaManagers = $user->assignedAreaManagers()
-                    ->select('id', 'name')
-                    ->orderBy('name')
+                    ->select('users.id', 'users.name')
+                    ->orderBy('users.name')
                     ->get();
             }
         }
