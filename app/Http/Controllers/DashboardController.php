@@ -460,11 +460,16 @@ class DashboardController extends Controller
     
     private function getVisitsByAreaManager($visitsQuery)
     {
-        // Get visits grouped by area manager
-        $visitsByAreaManager = (clone $visitsQuery)
+        // Get the date range from the main query
+        $startDate = Carbon::now()->startOfWeek();
+        $endDate = Carbon::now()->endOfWeek();
+        
+        // Create a fresh query to avoid column ambiguity issues
+        $visitsByAreaManager = StoreVisit::query()
+            ->whereBetween('store_visits.created_at', [$startDate, $endDate])
             ->join('restaurants', 'store_visits.restaurant_name', '=', 'restaurants.name')
-            ->join('user_restaurant', 'restaurants.id', '=', 'user_restaurant.restaurant_id')
-            ->join('users', 'user_restaurant.user_id', '=', 'users.id')
+            ->join('restaurant_user', 'restaurants.id', '=', 'restaurant_user.restaurant_id')
+            ->join('users', 'restaurant_user.user_id', '=', 'users.id')
             ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('roles.name', 'Area Manager')
