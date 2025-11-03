@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Visit Report - {{ $visit->restaurant_name ?? 'Unknown' }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #374151;
+            background: white;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #6b7280;
+            font-size: 12px;
+        }
+        
+        .section {
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .basic-info { background: #f3f4f6; }
+        .basic-info .section-header { background: #6b7280; }
+        
+        .customer-qsc { background: #f0fdf4; }
+        .customer-qsc .section-header { background: #16a34a; }
+        
+        .cashier { background: #fefce8; }
+        .cashier .section-header { background: #ca8a04; }
+        
+        .service { background: #eff6ff; }
+        .service .section-header { background: #2563eb; }
+        
+        .hygiene { background: #fdf2f8; }
+        .hygiene .section-header { background: #db2777; }
+        
+        .equipment { background: #f0f9ff; }
+        .equipment .section-header { background: #0284c7; }
+        
+        .section-content {
+            padding: 12px;
+            background: white;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .info-item {
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .info-label {
+            font-size: 9px;
+            font-weight: bold;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        
+        .info-value {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .checklist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .item-label {
+            font-size: 10px;
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        .status-badge {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .status-yes { background: #16a34a; }
+        .status-no { background: #dc2626; }
+        .status-na { background: #6b7280; }
+        
+        .comments-section {
+            margin-top: 10px;
+            padding: 8px;
+            background: #fffbeb;
+            border-radius: 4px;
+            border: 1px solid #fbbf24;
+        }
+        
+        .comments-title {
+            font-size: 9px;
+            font-weight: bold;
+            color: #92400e;
+            margin-bottom: 5px;
+        }
+        
+        .comments-text {
+            font-size: 10px;
+            color: #78350f;
+            font-style: italic;
+        }
+        
+        .signature-section {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            padding: 15px;
+            border: 2px dashed #6b7280;
+            border-radius: 6px;
+        }
+        
+        .signature-line {
+            height: 30px;
+            border-bottom: 1px solid #374151;
+            margin-bottom: 8px;
+        }
+        
+        .signature-label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #374151;
+            text-transform: uppercase;
+        }
+        
+        .score-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+            margin-left: 5px;
+        }
+        
+        .score-excellent { background: #16a34a; }
+        .score-good { background: #2563eb; }
+        .score-average { background: #ca8a04; }
+        .score-poor { background: #dc2626; }
+        
+        @media print {
+            body { 
+                padding: 5px; 
+                font-size: 10px;
+            }
+            .section { 
+                margin-bottom: 10px; 
+                break-inside: avoid;
+            }
+            .info-grid { 
+                grid-template-columns: repeat(4, 1fr);
+                gap: 5px;
+            }
+            .checklist-grid { 
+                grid-template-columns: repeat(3, 1fr);
+                gap: 5px;
+            }
+        }
+        
+        @page {
+            size: A4;
+            margin: 8mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏪 STORE VISIT REPORT</h1>
+            <p>Quality Management System Inspection Report</p>
+        </div>
+        
+        <!-- Basic Information Section -->
+        <div class="section basic-info">
+            <div class="section-header">📋 Basic Information</div>
+            <div class="section-content">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Restaurant</div>
+                        <div class="info-value">{{ $visit->restaurant_name ?? 'Unknown' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">MIC</div>
+                        <div class="info-value">{{ $visit->mic ?? 'Not specified' }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Date</div>
+                        <div class="info-value">{{ \Carbon\Carbon::parse($visit->date ?? $visit->created_at)->format('M d, Y') }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Score</div>
+                        <div class="info-value">
+                            {{ $visit->score ?? 0 }}%
+                            @php
+                                $score = $visit->score ?? 0;
+                                $scoreClass = $score >= 90 ? 'score-excellent' : 
+                                             ($score >= 80 ? 'score-good' : 
+                                             ($score >= 70 ? 'score-average' : 'score-poor'));
+                            @endphp
+                            <span class="score-badge {{ $scoreClass }}">
+                                @if($score >= 90) Excellent
+                                @elseif($score >= 80) Good  
+                                @elseif($score >= 70) Average
+                                @else Poor
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                @if($visit->purpose_of_visit)
+                <div class="info-item" style="grid-column: 1 / -1; margin-top: 8px;">
+                    <div class="info-label">Purpose of Visit</div>
+                    <div class="info-value">
+                        @if(is_array($visit->purpose_of_visit))
+                            {{ implode(', ', $visit->purpose_of_visit) }}
+                        @else
+                            {{ $visit->purpose_of_visit }}
+                        @endif
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+        
+        <!-- Customer / QSC Section -->
+        <div class="section customer-qsc">
+            <div class="section-header">👥 Customer / QSC</div>
+            <div class="section-content">
+                <div class="checklist-grid">
+                    <div class="checklist-item">
+                        <div class="item-label">OCA Board Followed/Communicated</div>
+                        <div class="status-badge {{ $visit->oca_board_followed === 1 ? 'status-yes' : ($visit->oca_board_followed === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->oca_board_followed === 1) Y
+                            @elseif($visit->oca_board_followed === 0) N  
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <div class="item-label">Staff Know their Side Duty</div>
+                        <div class="status-badge {{ $visit->staff_know_duty === 1 ? 'status-yes' : ($visit->staff_know_duty === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->staff_know_duty === 1) Y
+                            @elseif($visit->staff_know_duty === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cashier Section -->
+        <div class="section cashier">
+            <div class="section-header">💰 Cashier</div>
+            <div class="section-content">
+                <div class="checklist-grid">
+                    <div class="checklist-item">
+                        <div class="item-label">Smile and Friendly Greetings</div>
+                        <div class="status-badge {{ $visit->smile_greetings === 1 ? 'status-yes' : ($visit->smile_greetings === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->smile_greetings === 1) Y
+                            @elseif($visit->smile_greetings === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <div class="item-label">Correct Service Sequence</div>
+                        <div class="status-badge {{ $visit->correct_sequence === 1 ? 'status-yes' : ($visit->correct_sequence === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->correct_sequence === 1) Y
+                            @elseif($visit->correct_sequence === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Service Standards Section -->
+        <div class="section service">
+            <div class="section-header">⚡ Service Standards</div>
+            <div class="section-content">
+                <div class="checklist-grid">
+                    <div class="checklist-item">
+                        <div class="item-label">Personal Hygiene Standards</div>
+                        <div class="status-badge {{ $visit->personal_hygiene === 1 ? 'status-yes' : ($visit->personal_hygiene === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->personal_hygiene === 1) Y
+                            @elseif($visit->personal_hygiene === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <div class="item-label">Temperature Control</div>
+                        <div class="status-badge {{ $visit->temperature_control === 1 ? 'status-yes' : ($visit->temperature_control === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->temperature_control === 1) Y
+                            @elseif($visit->temperature_control === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <div class="item-label">Food Storage Practices</div>
+                        <div class="status-badge {{ $visit->food_storage === 1 ? 'status-yes' : ($visit->food_storage === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->food_storage === 1) Y
+                            @elseif($visit->food_storage === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <div class="item-label">Kitchen Cleanliness</div>
+                        <div class="status-badge {{ $visit->kitchen_cleanliness === 1 ? 'status-yes' : ($visit->kitchen_cleanliness === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->kitchen_cleanliness === 1) Y
+                            @elseif($visit->kitchen_cleanliness === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Equipment & Facilities Section -->
+        <div class="section equipment">
+            <div class="section-header">⚙️ Equipment & Facilities</div>
+            <div class="section-content">
+                <div class="checklist-grid">
+                    <div class="checklist-item">
+                        <div class="item-label">POS System Working</div>
+                        <div class="status-badge {{ $visit->pos_system_working === 1 ? 'status-yes' : ($visit->pos_system_working === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->pos_system_working === 1) Y
+                            @elseif($visit->pos_system_working === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <div class="item-label">Equipment Working Properly</div>
+                        <div class="status-badge {{ $visit->equipment_working === 1 ? 'status-yes' : ($visit->equipment_working === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->equipment_working === 1) Y
+                            @elseif($visit->equipment_working === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <div class="item-label">Facilities Clean</div>
+                        <div class="status-badge {{ $visit->facilities_clean === 1 ? 'status-yes' : ($visit->facilities_clean === 0 ? 'status-no' : 'status-na') }}">
+                            @if($visit->facilities_clean === 1) Y
+                            @elseif($visit->facilities_clean === 0) N
+                            @else —
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        @if($visit->comments)
+        <div class="comments-section">
+            <div class="comments-title">💬 Additional Comments</div>
+            <div class="comments-text">{{ $visit->comments }}</div>
+        </div>
+        @endif
+        
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">MIC Signature</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">Area Manager Signature</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-print when page loads
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        }
+    </script>
+</body>
+</html>
+        
+        .header {
+            text-align: center;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 2px solid #34495e;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .info-section {
+            background: #f8f9fc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e1e8ed;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .info-item label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 14px;
+        }
+        
+        .legend-section {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            border-left: 4px solid #ff8a65;
+        }
+        
+        .legend-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: #d84315;
+            margin-bottom: 12px;
+        }
+        
+        .legend-item {
+            margin: 8px 0;
+            color: #5d4037;
+            font-size: 11px;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 25px 0 15px 0;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .checklist-container {
+            background: #f8f9fc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .checklist-item {
+            background: white;
+            margin: 8px 0;
+            padding: 12px 15px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #e1e8ed;
+            transition: all 0.3s ease;
+        }
+        
+        .checklist-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .checklist-label {
+            flex: 1;
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .status-indicator {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin-left: 15px;
+        }
+        
+        .status-yes {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+        
+        .status-no {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+        }
+        
+        .status-na {
+            background: linear-gradient(135deg, #9e9e9e, #757575);
+            color: white;
+        }
+        
+        .purpose-section {
+            background: #e8f5e8;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .purpose-item {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        
+        .purpose-check {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            background: #4caf50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+        
+        .purpose-uncheck {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+        
+        .comment-section {
+            background: #fff3e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .comment-text {
+            color: #e65100;
+            font-style: italic;
+            font-weight: 500;
+        }
+        
+        .action-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .action-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+        }
+        
+        .action-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e1e8ed;
+            vertical-align: top;
+        }
+        
+        .action-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .action-table tr:nth-child(even) {
+            background: #f8f9fc;
+        }
+        
+        .signature-section {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .signature-box {
+            background: #f8f9fc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 2px dashed #667eea;
+        }
+        
+        .signature-line {
+            height: 40px;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .signature-label {
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+        }
+        
+        .score-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .score-excellent {
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+        }
+        
+        .score-good {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+        }
+        
+        .score-average {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+        
+        .score-poor {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+        
+        @media print {
+            body {
+                background: white !important;
+                margin: 0;
+                padding: 10px;
+            }
+            
+            .container {
+                box-shadow: none;
+                border: none;
+                border-radius: 0;
+                padding: 15px;
+                max-width: 100%;
+            }
+            
+            .header, .section-header {
+                background: #667eea !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            
+            .status-yes, .status-no, .status-na {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+        }
+        
+        @page {
+            size: A4;
+            margin: 12mm;
+        }
+    </style>
+        
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background: white;
+            padding: 10px;
+        }
+        
+        .header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .form-line {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-line label {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 120px;
+        }
+        
+        .underline {
+            border-bottom: 1px solid #000;
+            min-width: 200px;
+            padding-bottom: 2px;
+            margin-left: 5px;
+        }
+        
+        .legend {
+            margin: 20px 0;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        
+        .legend b {
+            font-weight: bold;
+        }
+        
+        .section-header {
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            font-size: 13px;
+            text-decoration: underline;
+        }
+        
+        .checklist-item {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .checklist-item label {
+            flex: 1;
+            margin-right: 10px;
+        }
+        
+        .yn-box {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .purpose-list {
+            margin: 10px 0 20px 0;
+        }
+        
+        .purpose-item {
+            margin: 5px 0;
+        }
+        
+        .signature-section {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .signature-box {
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid #000;
+            margin-bottom: 5px;
+            height: 30px;
+        }
+        
+        .comment-line {
+            border-bottom: 1px solid #000;
+            margin: 10px 0;
+            height: 20px;
+        }
+        
+        .action-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .action-table th, .action-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        .action-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 5px;
+            }
+        }
+        
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏪 STORE VISIT REPORT</h1>
+            <p>Quality Management System Inspection Report</p>
+        </div>
+        
+        <!-- Restaurant Information -->
+        <div class="info-section">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Restaurant</label>
+                    <div class="info-value">
+                        {{ $visit->restaurant_name ?? 'Unknown Restaurant' }}
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <label>MIC</label>
+                    <div class="info-value">{{ $visit->mic ?? 'Not Specified' }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <label>Date</label>
+                    <div class="info-value">{{ \Carbon\Carbon::parse($visit->date ?? $visit->created_at)->format('F d, Y') }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <label>Score</label>
+                    <div class="info-value">
+                        {{ $visit->score ?? 0 }}%
+                        @php
+                            $score = $visit->score ?? 0;
+                            $scoreClass = $score >= 90 ? 'score-excellent' : 
+                                         ($score >= 80 ? 'score-good' : 
+                                         ($score >= 70 ? 'score-average' : 'score-poor'));
+                        @endphp
+                        <span class="score-badge {{ $scoreClass }}">
+                            @if($score >= 90) Excellent
+                            @elseif($score >= 80) Good
+                            @elseif($score >= 70) Average
+                            @else Needs Improvement
+                            @endif
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Legend Section -->
+        <div class="legend-section">
+            <div class="legend-title">📋 Scoring Legend</div>
+            <div class="legend-item"><strong>A</strong> = Store maintain 100% QSC for all aspects.</div>
+            <div class="legend-item"><strong>B</strong> = Store has 2 Minor issues from QSC.</div>
+            <div class="legend-item"><strong>C</strong> = Having Critical Issues From QSC.</div>
+            <div class="legend-item"><strong>Major Issue:</strong> (Day Label, Store not Clean, 1 day they forget to fillup the QSC or TTF)</div>
+            <div class="legend-item"><strong>Critical Issue:</strong> Any type of Expired Items even day label/expired product. NO sanitizer.</div>
+        </div>
+        
+        <!-- Purpose of Visit -->
+        @if($visit->purpose_of_visit)
+        <div class="purpose-section">
+            <div class="legend-title">🎯 Purpose of Visit</div>
+            @php
+                $selectedPurpose = $visit->purpose_of_visit;
+                $allPurposes = [
+                    'Quality Audit',
+                    'Operational Assessment', 
+                    'Training Audit',
+                    'Measurement and Coaching'
+                ];
+            @endphp
+            @foreach($allPurposes as $purpose)
+                <div class="purpose-item">
+                    @if($selectedPurpose === $purpose)
+                        <div class="purpose-check">✓</div>
+                    @else
+                        <div class="purpose-uncheck"></div>
+                    @endif
+                    {{ $purpose }}
+                </div>
+            @endforeach
+        </div>
+        @endif
+        
+        <!-- Quality & Operations Checklist -->
+        <div class="section-header">🛡️ Quality & Operations</div>
+        <div class="checklist-container">
+            <div class="checklist-item">
+                <div class="checklist-label">OCA Board is Completely Followed/Communicated</div>
+                <div class="status-indicator {{ $visit->oca_board_followed === 1 ? 'status-yes' : ($visit->oca_board_followed === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->oca_board_followed === 1) Y
+                    @elseif($visit->oca_board_followed === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <div class="checklist-label">Staff Know their Side Duty</div>
+                <div class="status-indicator {{ $visit->staff_know_duty === 1 ? 'status-yes' : ($visit->staff_know_duty === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->staff_know_duty === 1) Y
+                    @elseif($visit->staff_know_duty === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <div class="checklist-label">Personal Hygiene Standards</div>
+                <div class="status-indicator {{ $visit->personal_hygiene === 1 ? 'status-yes' : ($visit->personal_hygiene === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->personal_hygiene === 1) Y
+                    @elseif($visit->personal_hygiene === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <div class="checklist-label">Temperature Control</div>
+                <div class="status-indicator {{ $visit->temperature_control === 1 ? 'status-yes' : ($visit->temperature_control === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->temperature_control === 1) Y
+                    @elseif($visit->temperature_control === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <div class="checklist-label">Food Storage Practices</div>
+                <div class="status-indicator {{ $visit->food_storage === 1 ? 'status-yes' : ($visit->food_storage === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->food_storage === 1) Y
+                    @elseif($visit->food_storage === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <div class="checklist-label">Kitchen Cleanliness</div>
+                <div class="status-indicator {{ $visit->kitchen_cleanliness === 1 ? 'status-yes' : ($visit->kitchen_cleanliness === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->kitchen_cleanliness === 1) Y
+                    @elseif($visit->kitchen_cleanliness === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customer Service -->
+        <div class="section-header">🤝 Customer Service</div>
+        <div class="checklist-container">
+            <div class="checklist-item">
+                <div class="checklist-label">Smile and Friendly Greetings</div>
+                <div class="status-indicator {{ $visit->smile_greetings === 1 ? 'status-yes' : ($visit->smile_greetings === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->smile_greetings === 1) Y
+                    @elseif($visit->smile_greetings === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <div class="checklist-label">Correct Service Sequence</div>
+                <div class="status-indicator {{ $visit->correct_sequence === 1 ? 'status-yes' : ($visit->correct_sequence === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->correct_sequence === 1) Y
+                    @elseif($visit->correct_sequence === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <!-- Equipment & Facilities -->
+        <div class="section-header">⚙️ Equipment & Facilities</div>
+        <div class="checklist-container">
+            <div class="checklist-item">
+                <div class="checklist-label">POS System Working</div>
+                <div class="status-indicator {{ $visit->pos_system_working === 1 ? 'status-yes' : ($visit->pos_system_working === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->pos_system_working === 1) Y
+                    @elseif($visit->pos_system_working === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <div class="checklist-label">Equipment Working Properly</div>
+                <div class="status-indicator {{ $visit->equipment_working === 1 ? 'status-yes' : ($visit->equipment_working === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->equipment_working === 1) Y
+                    @elseif($visit->equipment_working === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <div class="checklist-label">Facilities Clean</div>
+                <div class="status-indicator {{ $visit->facilities_clean === 1 ? 'status-yes' : ($visit->facilities_clean === 0 ? 'status-no' : 'status-na') }}">
+                    @if($visit->facilities_clean === 1) Y
+                    @elseif($visit->facilities_clean === 0) N
+                    @else —
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        @if($visit->comments)
+        <div class="comment-section">
+            <div class="legend-title">💬 Additional Comments</div>
+            <div class="comment-text">{{ $visit->comments }}</div>
+        </div>
+        @endif
+        
+        <!-- Action Plans -->
+        @if($actionPlans && $actionPlans->count() > 0)
+        <div class="section-header">⚠️ Action Plans Required</div>
+        <table class="action-table">
+            <thead>
+                <tr>
+                    <th>Why We Had Issue</th>
+                    <th>How To Improve</th>
+                    <th>Who/When</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($actionPlans as $plan)
+                    <tr>
+                        <td>{{ $plan->description ?? 'Issue not specified' }}</td>
+                        <td>{{ $plan->title ?? 'Improvement plan not specified' }}</td>
+                        <td>
+                            <strong>Who:</strong> {{ $plan->assigned_to ?? 'Not assigned' }}<br>
+                            <strong>When:</strong> {{ $plan->due_date ? \Carbon\Carbon::parse($plan->due_date)->format('M d, Y') : 'No due date' }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <div class="section-header">⚠️ Action Plans</div>
+        <table class="action-table">
+            <thead>
+                <tr>
+                    <th>Why We Had Issue</th>
+                    <th>How To Improve</th>
+                    <th>Who/When</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="height: 40px;">&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td style="height: 40px;">&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+        @endif
+        
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">MIC Signature</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-label">Area Manager Signature</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-print when page loads
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        }
+    </script>
+</body>
+</html>
+        <div style="font-weight: bold; margin: 20px 0 10px 0;">Coaching and Directing</div>
+        <div style="margin-left: 20px;">
+            <div style="font-weight: bold;">Cashier</div>
+            
+            <div class="checklist-item">
+                <label>Smile and Friendly Greetings</label>
+                <div class="yn-box">
+                    @if($visit->smile_greetings === 1)
+                        Y
+                    @elseif($visit->smile_greetings === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <label>Suggestive Selling</label>
+                <div class="yn-box">
+                    @if($visit->suggestive_selling === 1)
+                        Y
+                    @elseif($visit->suggestive_selling === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <label>Offer new Promotion</label>
+                <div class="yn-box">
+                    @if($visit->offer_promotion === 1)
+                        Y
+                    @elseif($visit->offer_promotion === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <label>Saying Thank you and Provides Direction:</label>
+                <div class="yn-box">
+                    @if($visit->thank_you_direction === 1)
+                        Y
+                    @elseif($visit->thank_you_direction === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <!-- Service Standards -->
+        <div style="font-weight: bold; margin: 20px 0 10px 0;">Service Standards:</div>
+        
+        <div class="checklist-item">
+            <label>Team Work and Hustle:</label>
+            <div class="yn-box">
+                @if($visit->team_work_hustle === 1)
+                    Y
+                @elseif($visit->team_work_hustle === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Order Accuracy</label>
+            <div class="yn-box">
+                @if($visit->order_accuracy === 1)
+                    Y
+                @elseif($visit->order_accuracy === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <!-- Service Time -->
+        <div style="font-weight: bold; margin: 15px 0 5px 0;">Service Time:</div>
+        <div style="margin-left: 20px;">
+            <div class="checklist-item">
+                <label>Dine IN</label>
+                <div class="yn-box">
+                    @if($visit->service_time_dine_in === 1)
+                        Y
+                    @elseif($visit->service_time_dine_in === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <label>Take Out</label>
+                <div class="yn-box">
+                    @if($visit->service_time_takeout === 1)
+                        Y
+                    @elseif($visit->service_time_takeout === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <label>Family</label>
+                <div class="yn-box">
+                    @if($visit->service_time_family === 1)
+                        Y
+                    @elseif($visit->service_time_family === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <label>Delivery</label>
+                <div class="yn-box">
+                    @if($visit->service_time_delivery === 1)
+                        Y
+                    @elseif($visit->service_time_delivery === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+            
+            <div class="checklist-item">
+                <label>Drive Thru</label>
+                <div class="yn-box">
+                    @if($visit->service_time_drive_thru === 1)
+                        Y
+                    @elseif($visit->service_time_drive_thru === 0)
+                        N
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <!-- FINANCIALS -->
+        <div style="font-weight: bold; margin: 20px 0 10px 0;">FINANCIALS</div>
+        
+        <!-- COMMENTS -->
+        <div style="font-weight: bold; margin: 20px 0 10px 0;">COMMENTS</div>
+        
+        <div class="checklist-item">
+            <label>TTF followed properly</label>
+            <div class="yn-box">
+                @if($visit->ttf_followed === 1)
+                    Y
+                @elseif($visit->ttf_followed === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Sandwich Assembly being followed</label>
+            <div class="yn-box">
+                @if($visit->sandwich_assembly === 1)
+                    Y
+                @elseif($visit->sandwich_assembly === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>QSC was completed and followed properly</label>
+            <div class="yn-box">
+                @if($visit->qsc_completed === 1)
+                    Y
+                @elseif($visit->qsc_completed === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Oil/Shortening Meets Standards.</label>
+            <div class="yn-box">
+                @if($visit->oil_shortening_standards === 1)
+                    Y
+                @elseif($visit->oil_shortening_standards === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Day Labels updated</label>
+            <div class="yn-box">
+                @if($visit->day_labels_updated === 1)
+                    Y
+                @elseif($visit->day_labels_updated === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Equipments are all working properly.</label>
+            <div class="yn-box">
+                @if($visit->equipment_working === 1)
+                    Y
+                @elseif($visit->equipment_working === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>(Fryer Basket in Good Condition not broken or rusty)</label>
+            <div class="yn-box">
+                @if($visit->fryer_basket_condition === 1)
+                    Y
+                @elseif($visit->fryer_basket_condition === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>(Vegetable Preparation meets standards and Salad Prep.)</label>
+            <div class="yn-box">
+                @if($visit->vegetable_prep_standards === 1)
+                    Y
+                @elseif($visit->vegetable_prep_standards === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Employee Appearance well groom.</label>
+            <div class="yn-box">
+                @if($visit->employee_appearance === 1)
+                    Y
+                @elseif($visit->employee_appearance === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <!-- CLEANLINESS -->
+        <div style="font-weight: bold; margin: 20px 0 10px 0;">CLEANLINESS:</div>
+        
+        <div class="checklist-item">
+            <label>Equipment are wrapped and hang.</label>
+            <div class="yn-box">
+                @if($visit->equipment_wrapped === 1)
+                    Y
+                @elseif($visit->equipment_wrapped === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Compartment sink are set-up properly.</label>
+            <div class="yn-box">
+                @if($visit->compartment_sink_setup === 1)
+                    Y
+                @elseif($visit->compartment_sink_setup === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Sanitizer meets standard</label>
+            <div class="yn-box">
+                @if($visit->sanitizer_standard === 1)
+                    Y
+                @elseif($visit->sanitizer_standard === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Dining Area/Family no busting</label>
+            <div class="yn-box">
+                @if($visit->dining_area_clean === 1)
+                    Y
+                @elseif($visit->dining_area_clean === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>CR or handwash have tissue and clean</label>
+            <div class="yn-box">
+                @if($visit->cr_handwash_clean === 1)
+                    Y
+                @elseif($visit->cr_handwash_clean === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <!-- FOLLOW UP -->
+        <div style="font-weight: bold; margin: 20px 0 10px 0;">FOLLOW UP:</div>
+        <div style="text-align: right; font-weight: bold;">Y/N</div>
+        
+        <div style="font-weight: bold; margin: 15px 0 5px 0;">LAST VISIT</div>
+        
+        <div style="margin: 10px 0;">
+            <strong>UPDATE FOR THE LAST VISIT:</strong>
+            <div class="comment-line">{{ $visit->last_visit_update ?? '' }}</div>
+        </div>
+        
+        <div style="margin: 10px 0;">
+            <strong>ANY OTHER FOLLOW UP:</strong>
+            <div class="comment-line">{{ $visit->other_follow_up ?? '' }}</div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Weekly Schedule and Overtime</label>
+            <div class="yn-box">
+                @if($visit->weekly_schedule_overtime === 1)
+                    Y
+                @elseif($visit->weekly_schedule_overtime === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>MOD aware of Financial Goal</label>
+            <div class="yn-box">
+                @if($visit->mod_financial_goal === 1)
+                    Y
+                @elseif($visit->mod_financial_goal === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Sales (Cashier Objectives)</label>
+            <div class="yn-box">
+                @if($visit->sales_cashier_objectives === 1)
+                    Y
+                @elseif($visit->sales_cashier_objectives === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Cash Policies followed Spot Check</label>
+            <div class="yn-box">
+                @if($visit->cash_policies_followed === 1)
+                    Y
+                @elseif($visit->cash_policies_followed === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div class="checklist-item">
+            <label>Daily Waste Followed Properly (Daily)</label>
+            <div class="yn-box">
+                @if($visit->daily_waste_followed === 1)
+                    Y
+                @elseif($visit->daily_waste_followed === 0)
+                    N
+                @endif
+            </div>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <strong>WHAT DID YOU SEE TODAY:</strong>
+            <div class="comment-line">{{ $visit->what_saw_today ?? '' }}</div>
+        </div>
+        
+        <!-- Signature Section -->
+        <div style="margin: 30px 0 20px 0;">
+            <strong>MIC SIGNATURE</strong>
+            <div class="comment-line"></div>
+        </div>
+        
+        <!-- Action Plan Table -->
+        <table class="action-table">
+            <thead>
+                <tr>
+                    <th>WHY WE HAD ISSUE</th>
+                    <th>HOW TO IMPROVE</th>
+                    <th>WHO/WHEN</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if($actionPlans && $actionPlans->count() > 0)
+                    @foreach($actionPlans as $plan)
+                        <tr>
+                            <td>{{ $plan->description ?? '' }}</td>
+                            <td>{{ $plan->title ?? '' }}</td>
+                            <td>{{ $plan->assigned_to ?? '' }}<br>{{ $plan->due_date ? \Carbon\Carbon::parse($plan->due_date)->format('M d, Y') : '' }}</td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+        
+        <!-- Area Manager Signature -->
+        <div style="margin: 30px 0;">
+            <div class="comment-line"></div>
+            <div style="text-align: center; font-weight: bold;">AREA MANAGER SIGNATURE</div>
+        </div>
+        
+        @if($visit->comments)
+        <!-- Additional Comments -->
+        <div style="margin: 20px 0;">
+            <strong>Additional Comments:</strong><br>
+            {{ $visit->comments }}
+        </div>
+        @endif
+    </div>
+    
+    <script>
+        // Auto-print when page loads
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        }
+    </script>
+</body>
+</html>
