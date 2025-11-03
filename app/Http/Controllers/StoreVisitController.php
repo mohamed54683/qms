@@ -885,4 +885,19 @@ class StoreVisitController extends Controller
             ]);
         }
     }
+
+    /**
+     * Print/export a single store visit report as PDF
+     */
+    public function printReport($id)
+    {
+        $visit = StoreVisit::with(['user', 'actionPlans'])->findOrFail($id);
+        
+        // Load PDF view with visit data
+        $pdf = Pdf::loadView('exports.single-visit-pdf', compact('visit'))
+                  ->setPaper('a4');
+        
+        // Stream PDF to browser (for printing/viewing)
+        return $pdf->stream('store-visit-report-' . $visit->restaurant_name . '-' . $visit->visit_date->format('Y-m-d') . '.pdf');
+    }
 }

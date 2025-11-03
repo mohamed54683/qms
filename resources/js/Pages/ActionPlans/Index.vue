@@ -283,7 +283,7 @@
                                 </div>
 
                                 <!-- Area Manager Filter -->
-                                <div v-if="props.canViewAreaManagerFilter || props.isAdmin" class="space-y-2">
+                                <div class="space-y-2">
                                     <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
                                         <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -296,6 +296,15 @@
                                             {{ manager.name }}
                                         </option>
                                     </select>
+                                    
+                                    <!-- DEBUG INFO - temporary -->
+                                    <div class="p-2 bg-yellow-100 border border-yellow-400 rounded text-xs">
+                                        <strong>DEBUG:</strong><br>
+                                        Area Managers Count: {{ areaManagers?.length || 0 }}<br>
+                                        Can View Filter: {{ props.canViewAreaManagerFilter }}<br>
+                                        Is Admin: {{ props.isAdmin }}<br>
+                                        Auth User: {{ props.auth?.user?.name }}<br>
+                                    </div>
                                 </div>
 
                                 <div class="space-y-2">

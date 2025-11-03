@@ -161,6 +161,14 @@ class ActionPlanController extends Controller
             'filters' => $request->only(['restaurants', 'restaurant', 'status', 'priority', 'date_from', 'date_to', 'search', 'area_manager']),
             'isAdmin' => $isAdmin,
             'canViewAreaManagerFilter' => $canViewAreaManagerFilter,
+            // DEBUG: Add extra info to help troubleshoot
+            'debugInfo' => [
+                'areaManagersCount' => count($areaManagers),
+                'canViewAreaManagerFilter' => $canViewAreaManagerFilter,
+                'isAdmin' => $isAdmin,
+                'userId' => $user->id,
+                'userRoles' => $user->roles->pluck('name')->toArray(),
+            ],
             'auth' => [
                 'user' => $user
             ]
